@@ -10,14 +10,26 @@
     <input type="text" v-model="search">
     <p>Search term - {{ search }}</p>
     <div v-for="jedi in matchingJedis" :key="jedi">{{ jedi }}</div>
+    
+    <br><br><br>
+    <!-- PART 2 -->
+    <div v-if="error">{{ error }}</div>
+    <div v-if="posts.length">
+      <PostList v-if="showPosts" :posts="posts"/>
+    </div>
+    <div v-else>Loading...</div>
+    <button @click="showPosts = !showPosts">toggle Posts</button>
+    <button @click="posts.pop()">delete post</button> <!-- pop() remove an element from the posts array-->
   </div>
 </template>
 
 <script>
+import PostList from '../components/PostList.vue'
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
 
 export default {
   name: 'Home',
+  components: { PostList },
   setup() { // Vue using the Composition API
 
     // Creating reactive variables like the data() method in the options API
@@ -52,7 +64,28 @@ export default {
      stopWatchEffect() // Invoke to stop watching
    }
 
-    return { name, age, handleClick, jedis, search, matchingJedis} // Value of DOM elements can be accessed after returning
+   // PART 2
+   const posts = ref([])
+   const error = ref(null)
+
+   const load =  async () => {
+     try {
+       const data = await fetch('http://localhost:3000/posts')
+       if(!data.ok) {
+         throw Error('data not available')
+       }
+       posts.value = await data.json()
+     }
+     catch (err) {
+       error.value = err.message
+     }
+   }
+
+   load()
+
+   const showPosts = ref(true)
+
+    return { name, age, handleClick, jedis, search, matchingJedis, posts, showPosts, error } // Value of DOM elements can be accessed after returning
   }
 }
 </script>
