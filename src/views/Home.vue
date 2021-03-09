@@ -18,6 +18,7 @@
       <PostList v-if="showPosts" :posts="posts"/>
     </div>
     <div v-else>Loading...</div>
+    <br>
     <button @click="showPosts = !showPosts">toggle Posts</button>
     <button @click="posts.pop()">delete post</button> <!-- pop() remove an element from the posts array-->
   </div>
@@ -26,6 +27,7 @@
 <script>
 import PostList from '../components/PostList.vue'
 import { computed, reactive, ref, watch, watchEffect } from 'vue'
+import getPosts from '../composables/getPosts'
 
 export default {
   name: 'Home',
@@ -65,21 +67,8 @@ export default {
    }
 
    // PART 2
-   const posts = ref([])
-   const error = ref(null)
 
-   const load =  async () => {
-     try {
-       const data = await fetch('http://localhost:3000/posts')
-       if(!data.ok) {
-         throw Error('data not available')
-       }
-       posts.value = await data.json()
-     }
-     catch (err) {
-       error.value = err.message
-     }
-   }
+   const { posts, error, load } = getPosts() // from Composables / Composition Functions
 
    load()
 
